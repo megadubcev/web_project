@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Меню</title>
+</head>
+<body>
+<h1 align="center">Магазин Суши</h1>
+<h3 align="center">Лучший магазин в мире</h3>
+        {% if "username" in session %}
+<div align="right"><a href=/logout>Выйти</a></div>
+        {% else %}
+<div align="right"><a href=/login>Войти</a></div>
+        {% endif %}
+<div align="center"><strong> Меню: </strong></div>
+
+<div align="center"><a href=/login>Суши</a>--<a href=/login>Роллы</a>--<a href=/login>Напитки</a></div>
+<p>
+    {% if "username" in session %}
+<div align="center"><a href=/add_food>Добавить товар</a></div>
+        {% endif %}
+</p>
+</body>
+</html>
