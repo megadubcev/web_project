@@ -86,10 +86,16 @@ class FoodModel:
         cursor.close()
         self.connection.commit()
 
-    def get(self, user_id):
+    def delete(self, id):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM users WHERE id = ?", (str(user_id),))
-        row = cursor.fetchone()
+        cursor.execute('''DELETE FROM food WHERE id = ?''', (str(id),))
+        cursor.close()
+        self.connection.commit()
+
+    def get_type(self, type):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM food WHERE food_type = ?", (str(type),))
+        row = cursor.fetchall()
         return row
 
     def get_all(self):
@@ -157,12 +163,22 @@ def addFoodFunc():
     return render_template('add_food.html', title='Добавление товара', form=form)
 
 
+@app.route('/show_food/<type>')
+def showFoodFunc(type):
+    return render_template('show_food.html', title='меню', food=foodDB.get_type(type))
+
+@app.route('/delete_food/<id>')
+def deleteFoodFunc(id):
+    foodDB.delete(id)
+    return '<script>document.location.href = document.referrer</script>'
+
 db = DB()
 userDB = UsersModel(db.get_connection())
 userDB.init_table()
 foodDB = FoodModel(db.get_connection())
 foodDB.init_table()
 # print(userDB.get_all())
-print(foodDB.get_all())
+print(foodDB.get_type("Суши"))
+
 if __name__ == '__main__':
     app.run(port=8888, host='127.0.0.1')
