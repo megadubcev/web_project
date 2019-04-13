@@ -92,6 +92,12 @@ class FoodModel:
         cursor.close()
         self.connection.commit()
 
+    def get(self, food_id):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM food WHERE id = ?", (str(food_id),))
+        row = cursor.fetchone()
+        return row
+
     def get_type(self, type):
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM food WHERE food_type = ?", (str(type),))
@@ -101,6 +107,43 @@ class FoodModel:
     def get_all(self):
         cursor = self.connection.cursor()
         cursor.execute("SELECT * FROM food")
+        rows = cursor.fetchall()
+        return rows
+
+
+class Zacaz:
+    def __init__(self, connection):
+        self.connection = connection
+
+    def init_table(self):
+        cursor = self.connection.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS zacaz 
+                            (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                             foods VARCHAR(1000),
+                             address VARCHAR(100),
+                             telephone_number VARCHAR(20),
+                             sum INTEGER
+                             )''')
+        cursor.close()
+        self.connection.commit()
+
+    def insert(self, foods, address, telephone_number, sum):
+        cursor = self.connection.cursor()
+        cursor.execute('''INSERT INTO food 
+                          (foods, address, telephone_number, sum) 
+                          VALUES (?,?,?,?)''', (foods, address, telephone_number, sum))
+        cursor.close()
+        self.connection.commit()
+
+    def delete(self, id):
+        cursor = self.connection.cursor()
+        cursor.execute('''DELETE FROM zacaz WHERE id = ?''', (str(id),))
+        cursor.close()
+        self.connection.commit()
+
+    def get_all(self):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM zacaz")
         rows = cursor.fetchall()
         return rows
 
@@ -118,6 +161,38 @@ class AddFoodForm(FlaskForm):
     description = TextAreaField('Описание', validators=[DataRequired()])
     price = IntegerField('Цена', validators=[DataRequired()])
     submit = SubmitField('Добавить')
+
+
+class AddFoodBasketForm(FlaskForm):
+    kolvo = IntegerField('Количество', validators=[DataRequired()])
+    submit = SubmitField('Готово')
+
+
+def basketToList(basketstr):
+    l1 = basketstr.split(' шт; ')
+    l1 = l1[0:-1]
+    l2 = [s.split(" : ") for s in l1]
+    l3 = [[foodDB.get(int(s[0])), s[1]] for s in l2]
+    return l3
+
+
+def basketToStr(basketlist):
+    s = ''
+    for z in basketlist:
+        s += str(z[0][0]) + " : " + str(z[1]) + ' шт; '
+    return s
+
+
+def deliteBasket(id):
+    basket = basketToList(session['basket'])
+    for i in range(len(basket)):
+        print (basket[i][0][0])
+        print(id)
+        print(" ")
+        if basket[i][0][0] == int(id):
+            del basket[i]
+            session['basket'] = basketToStr(basket)
+            break
 
 
 @app.route('/')
@@ -167,10 +242,38 @@ def addFoodFunc():
 def showFoodFunc(type):
     return render_template('show_food.html', title='меню', food=foodDB.get_type(type))
 
+
 @app.route('/delete_food/<id>')
 def deleteFoodFunc(id):
     foodDB.delete(id)
     return '<script>document.location.href = document.referrer</script>'
+
+
+@app.route('/add_food_basket/<id>', methods=['GET', 'POST'])
+def addFoodBasketFunk(id):
+    form = AddFoodBasketForm()
+    if form.validate_on_submit():
+        if not 'basket' in session:
+            session['basket'] = ''
+        deliteBasket(id)
+        session['basket'] += str(id) + ' : ' + str(form.kolvo.data) + ' шт; '
+        print(session['basket'])
+        return redirect('/')
+    return render_template('add_food_basket.html', title='Добавление товара', form=form, food=foodDB.get(id))
+
+
+@app.route('/show_food_basket')
+def showFoodBasketFunc():
+    return render_template('show_food_basket.html', title='меню', food=basketToList(session['basket']))
+
+@app.route('/delete_food_basket/<id>')
+def deleteFoodBasketFunc(id):
+    deliteBasket(id)
+    print(session['basket'])
+    return redirect('/show_food_basket')
+
+
+
 
 db = DB()
 userDB = UsersModel(db.get_connection())
@@ -179,6 +282,5 @@ foodDB = FoodModel(db.get_connection())
 foodDB.init_table()
 # print(userDB.get_all())
 print(foodDB.get_type("Суши"))
-
 if __name__ == '__main__':
-    app.run(port=8888, host='127.0.0.1')
+    app.run(port=8088, host='127.0.0.1')
