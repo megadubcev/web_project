@@ -168,6 +168,12 @@ class AddFoodBasketForm(FlaskForm):
     submit = SubmitField('Готово')
 
 
+class AddZacazForm(FlaskForm):
+    address = TextAreaField('Адрес', validators=[DataRequired()])
+    phone = IntegerField('Телефон', validators=[DataRequired()])
+    submit = SubmitField('Готово')
+
+
 def basketToList(basketstr):
     l1 = basketstr.split(' шт; ')
     l1 = l1[0:-1]
@@ -186,7 +192,7 @@ def basketToStr(basketlist):
 def deliteBasket(id):
     basket = basketToList(session['basket'])
     for i in range(len(basket)):
-        print (basket[i][0][0])
+        print(basket[i][0][0])
         print(id)
         print(" ")
         if basket[i][0][0] == int(id):
@@ -265,6 +271,14 @@ def addFoodBasketFunk(id):
 @app.route('/show_food_basket')
 def showFoodBasketFunc():
     return render_template('show_food_basket.html', title='меню', food=basketToList(session['basket']))
+
+@app.route('/add_zacaz', methods=['GET', 'POST'])
+def addZacazFunk():
+    form = AddZacazForm()
+    if form.validate_on_submit():
+        return redirect('/')
+    return render_template('add_zacaz.html', title='Добавление заказа', form=form)
+
 
 @app.route('/delete_food_basket/<id>')
 def deleteFoodBasketFunc(id):

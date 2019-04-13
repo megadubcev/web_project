@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for item in food %}
+    <div class="alert alert-primary" role="alert">
+        <h2>{{item[1]}}</h2>
+        <div>{{item[2]}}</div>
+        <div>{{item[3]}}</div>
+        <div>{{item[4]}} р.</div>
+
+        <form method="post" >
+        </form>
+        <a href="/add_food_basket/{{item[0]}}">В корзину</a> <br>
+        <a href="/delete_food/{{item[0]}}">Удалить товар</a>
+    </div>
+{% endfor %}
+{% endblock %}
