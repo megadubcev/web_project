@@ -14,4 +14,7 @@
         <a href="/delete_zacaz/{{item[0]}}">Удалить из корзины</a>
     </div>
 {% endfor %}
+    {% if not zacaz%}
+     <div>Заказов нет</div>
+    {% endif %}
 {% endblock %}

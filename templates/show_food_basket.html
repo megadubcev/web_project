@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if food%}
 <a href="/add_zacaz">отправить заказ на сумму {{sum}} руб.</a>
 {% for item in food %}
     <div class="alert alert-primary" role="alert">
@@ -13,4 +14,7 @@
         <a href="/delete_food_basket/{{item[0][0]}}">Удалить из корзины</a>
     </div>
 {% endfor %}
+{% else%}
+     <div>Корзина пуста</div>
+{% endif %}
 {% endblock %}

@@ -254,7 +254,7 @@ def addFoodFunc():
 
 @app.route('/show_food/<type>')
 def showFoodFunc(type):
-    return render_template('show_food.html', title='меню', food=foodDB.get_type(type))
+    return render_template('show_food.html', title=type, food=foodDB.get_type(type))
 
 
 @app.route('/delete_food/<id>')
@@ -267,18 +267,23 @@ def deleteFoodFunc(id):
 def addFoodBasketFunk(id):
     form = AddFoodBasketForm()
     if form.validate_on_submit():
+        if form.kolvo.data < 1:
+            return render_template('add_food_basket.html', title='Добавление в корзину', form=form, food=foodDB.get(id),
+                                   er=True)
         if not 'basket' in session:
             session['basket'] = ''
         deliteBasket(id)
         session['basket'] += str(id) + ' : ' + str(form.kolvo.data) + ' шт; '
         print(session['basket'])
         return redirect('/')
-    return render_template('add_food_basket.html', title='Добавление товара', form=form, food=foodDB.get(id))
+    return render_template('add_food_basket.html', title='Добавление в корзину', form=form, food=foodDB.get(id),
+                           er=False)
 
 
 @app.route('/show_food_basket')
 def showFoodBasketFunc():
-    return render_template('show_food_basket.html', title='меню', food=basketToList(session['basket']), sum=sumZacaz())
+    return render_template('show_food_basket.html', title='Корзина', food=basketToList(session['basket']),
+                           sum=sumZacaz())
 
 
 @app.route('/delete_food_basket/<id>')
@@ -295,7 +300,7 @@ def addZacazFunk():
         zacazDB.insert(session['basket'], form.address.data, form.phone.data, sumZacaz())
         print(zacazDB.get_all())
         session['basket'] = ''
-        return redirect('/')
+        return redirect('/show_food_basket')
     return render_template('add_zacaz.html', title='Добавление заказа', form=form)
 
 
@@ -303,11 +308,11 @@ def addZacazFunk():
 def showZacazFunc():
     return render_template('show_zacaz.html', title='Заказы', zacaz=zacazDB.get_all())
 
+
 @app.route('/delete_zacaz/<id>')
 def deleteZacazFunc(id):
     zacazDB.delete(id)
     return redirect('/show_zacaz')
-
 
 
 db = DB()
