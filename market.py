@@ -282,6 +282,8 @@ def addFoodBasketFunk(id):
 
 @app.route('/show_food_basket')
 def showFoodBasketFunc():
+    if not 'basket' in session:
+            session['basket'] = ''
     return render_template('show_food_basket.html', title='Корзина', food=basketToList(session['basket']),
                            sum=sumZacaz())
 
