@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="/add_zacaz">отправить заказ</a>
+<a href="/add_zacaz">отправить заказ на сумму {{sum}} руб.</a>
 {% for item in food %}
     <div class="alert alert-primary" role="alert">
         <h2>{{item[0][1]}}</h2>

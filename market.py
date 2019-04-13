@@ -111,7 +111,7 @@ class FoodModel:
         return rows
 
 
-class Zacaz:
+class ZacazModel:
     def __init__(self, connection):
         self.connection = connection
 
@@ -129,7 +129,7 @@ class Zacaz:
 
     def insert(self, foods, address, telephone_number, sum):
         cursor = self.connection.cursor()
-        cursor.execute('''INSERT INTO food 
+        cursor.execute('''INSERT INTO zacaz
                           (foods, address, telephone_number, sum) 
                           VALUES (?,?,?,?)''', (foods, address, telephone_number, sum))
         cursor.close()
@@ -170,7 +170,7 @@ class AddFoodBasketForm(FlaskForm):
 
 class AddZacazForm(FlaskForm):
     address = TextAreaField('Адрес', validators=[DataRequired()])
-    phone = IntegerField('Телефон', validators=[DataRequired()])
+    phone = StringField('Телефон', validators=[DataRequired()])
     submit = SubmitField('Готово')
 
 
@@ -178,7 +178,7 @@ def basketToList(basketstr):
     l1 = basketstr.split(' шт; ')
     l1 = l1[0:-1]
     l2 = [s.split(" : ") for s in l1]
-    l3 = [[foodDB.get(int(s[0])), s[1]] for s in l2]
+    l3 = [[foodDB.get(int(s[0])), int(s[1])] for s in l2]
     return l3
 
 
@@ -199,6 +199,14 @@ def deliteBasket(id):
             del basket[i]
             session['basket'] = basketToStr(basket)
             break
+
+
+def sumZacaz():
+    s = 0
+    basket = basketToList(session['basket'])
+    for b in basket:
+        s += b[0][4] * b[1]
+    return s
 
 
 @app.route('/')
@@ -270,14 +278,7 @@ def addFoodBasketFunk(id):
 
 @app.route('/show_food_basket')
 def showFoodBasketFunc():
-    return render_template('show_food_basket.html', title='меню', food=basketToList(session['basket']))
-
-@app.route('/add_zacaz', methods=['GET', 'POST'])
-def addZacazFunk():
-    form = AddZacazForm()
-    if form.validate_on_submit():
-        return redirect('/')
-    return render_template('add_zacaz.html', title='Добавление заказа', form=form)
+    return render_template('show_food_basket.html', title='меню', food=basketToList(session['basket']), sum=sumZacaz())
 
 
 @app.route('/delete_food_basket/<id>')
@@ -287,6 +288,26 @@ def deleteFoodBasketFunc(id):
     return redirect('/show_food_basket')
 
 
+@app.route('/add_zacaz', methods=['GET', 'POST'])
+def addZacazFunk():
+    form = AddZacazForm()
+    if form.validate_on_submit():
+        zacazDB.insert(session['basket'], form.address.data, form.phone.data, sumZacaz())
+        print(zacazDB.get_all())
+        session['basket'] = ''
+        return redirect('/')
+    return render_template('add_zacaz.html', title='Добавление заказа', form=form)
+
+
+@app.route('/show_zacaz')
+def showZacazFunc():
+    return render_template('show_zacaz.html', title='Заказы', zacaz=zacazDB.get_all())
+
+@app.route('/delete_zacaz/<id>')
+def deleteZacazFunc(id):
+    zacazDB.delete(id)
+    return redirect('/show_zacaz')
+
 
 
 db = DB()
@@ -294,6 +315,8 @@ userDB = UsersModel(db.get_connection())
 userDB.init_table()
 foodDB = FoodModel(db.get_connection())
 foodDB.init_table()
+zacazDB = ZacazModel(db.get_connection())
+zacazDB.init_table()
 # print(userDB.get_all())
 print(foodDB.get_type("Суши"))
 if __name__ == '__main__':

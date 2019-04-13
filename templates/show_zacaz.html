@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for item in zacaz %}
+    <div class="alert alert-primary" role="alert">
+        <h2>заказ номер {{item[0]}}</h2>
+        <div>Товары: {{item[1]}}</div>
+        <div>Адрес: {{item[2]}}</div>
+        <div>Телефон: {{item[3]}}</div>
+        <div>Сумма: {{item[4]}} р.</div>
+
+        <form method="post" >
+        </form>
+        <a href="/delete_zacaz/{{item[0]}}">Удалить из корзины</a>
+    </div>
+{% endfor %}
+{% endblock %}
